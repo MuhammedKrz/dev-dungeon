@@ -1,6 +1,8 @@
 package item.effects;
 
 import core.Entity;
+import core.components.PlayerComponent;
+import core.components.VelocityComponent;
 import systems.EventScheduler;
 
 /**
@@ -36,6 +38,32 @@ public class SpeedEffect {
    * @param target The entity to which the speed effect will be applied.
    */
   public void applySpeedEffect(Entity target) {
-    throw new UnsupportedOperationException("Method not implemented.");
+      // Check if it's a player
+      if (target.fetch(PlayerComponent.class).isEmpty()) {
+          throw new UnsupportedOperationException(
+              "Speed Portions can only be applied to player entities.");
+      }
+
+
+      target.fetch(core.components.VelocityComponent.class)
+          // if the component is available
+          .ifPresent(velocityComponent -> {
+            // Storing the current Speed
+            float defaultXVelocity = velocityComponent.xVelocity();
+            float defaultYVelocity = velocityComponent.yVelocity();
+
+            // increase the speed with random value
+            velocityComponent.xVelocity(defaultXVelocity + 5.0f);
+            velocityComponent.yVelocity(defaultYVelocity + 5.0f);
+
+            // Set after a certain time the speed back
+              EVENT_SCHEDULER.scheduleAction(
+                  () -> {
+                      velocityComponent.xVelocity(defaultXVelocity);
+                      velocityComponent.yVelocity(defaultYVelocity);
+                  },
+                  duration * 1000L
+              );
+          });
   }
 }
