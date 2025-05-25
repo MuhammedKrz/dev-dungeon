@@ -12,12 +12,17 @@ import core.level.utils.Coordinate;
 import core.utils.Point;
 import core.utils.components.MissingComponentException;
 import entities.BurningFireballSkill;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.IntStream;
 import level.utils.ITickable;
 import level.utils.LevelUtils;
 import utils.ArrayUtils;
+
+import static core.Game.entityStream;
 
 public class TorchRiddleRiddleHandler implements ITickable {
 
@@ -130,7 +135,7 @@ public class TorchRiddleRiddleHandler implements ITickable {
     this.rewardGiven = true;
 
     // Once the reward is given, all torches are extinguished
-    Game.entityStream()
+    entityStream()
         .filter(e -> e.isPresent(TorchComponent.class))
         .forEach(
             e -> {
@@ -203,6 +208,7 @@ public class TorchRiddleRiddleHandler implements ITickable {
    */
   public void setRiddleSolution(List<Integer> torchNumbers) {
     this.riddleSearchedSum = this.getRandomSumOfNElements(torchNumbers);
+      System.out.println(riddleSearchedSum);
   }
 
   /**
@@ -221,6 +227,16 @@ public class TorchRiddleRiddleHandler implements ITickable {
    * @return The sum of the values of all lit torches in the game.
    */
   private int getSumOfLitTorches() {
-    throw new UnsupportedOperationException("Not implemented yet.");
+      // stream of all entities currently
+      // set factory method for creating immutable sets and to give as argument
+      return entityStream(Set.of(TorchComponent.class))
+          // filter for glowing torches
+          .filter(e -> e.fetch(TorchComponent.class).get().lit())
+          // filter for values greater than 0
+          .filter((e)-> e.fetch(TorchComponent.class).get().value() > 0)
+          // transform to int stream
+          .mapToInt((e) -> e.fetch(TorchComponent.class).get().value())
+          // calculate the sum and return it
+          .sum();
   }
 }
